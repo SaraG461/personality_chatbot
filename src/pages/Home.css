@@ -1,0 +1,256 @@
+:root {
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #312c3d;
+  background: #f7f4fb;
+
+  --purple-dark: #5f4678;
+  --purple-main: #8d6caf;
+  --purple-light: #eee5f7;
+  --purple-pale: #f7f1fb;
+  --white: #ffffff;
+  --text-main: #312c3d;
+  --text-muted: #746d7c;
+  --border: #e4dbea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, #eadff5 0%, transparent 38%),
+    #f8f6fb;
+}
+
+button {
+  font: inherit;
+}
+
+.home-page {
+  width: min(1150px, calc(100% - 40px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 80px 0;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 70px;
+}
+
+.hero {
+  max-width: 650px;
+}
+
+.eyebrow,
+.small-label {
+  margin: 0;
+  color: var(--purple-main);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09rem;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 18px 0 24px;
+  font-size: clamp(3rem, 6vw, 5.2rem);
+  line-height: 1.03;
+  letter-spacing: -0.05em;
+}
+
+.hero h1 span {
+  color: var(--purple-main);
+}
+
+.hero-description {
+  max-width: 600px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.primary-button {
+  border: none;
+  color: var(--white);
+  background: var(--purple-main);
+  box-shadow: 0 12px 25px rgba(95, 70, 120, 0.2);
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  background: var(--surface);
+}
+
+.secondary-button:hover {
+  border-color: var(--purple-main);
+  color: var(--purple-main);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+.preview-card {
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: 0 25px 60px var(--shadow);
+  color: var(--text-main);
+}
+
+.preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-heading h2 {
+  color: var(--purple-main);
+}
+
+.personality-details h3,
+.companion-card h3 {
+  color: var(--text-main);
+}
+
+.personality-details p,
+.companion-card p:last-child {
+  color: var(--text-muted);
+}
+
+.small-label {
+  color: var(--purple-main);
+}
+
+.preview-heading {
+  border-bottom-color: var(--border);
+}
+
+.match-badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--purple-dark);
+  background: var(--purple-light);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.personality-details {
+  padding: 24px 0;
+}
+
+.personality-details h3,
+.companion-card h3 {
+  margin: 0 0 8px;
+}
+
+.personality-details p,
+.companion-card p:last-child {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.companion-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-soft);
+}
+
+.avatar {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--purple-main);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+@media (max-width: 850px) {
+  .home-page {
+    grid-template-columns: 1fr;
+    gap: 45px;
+    padding: 55px 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .home-page {
+    width: min(100% - 24px, 1150px);
+  }
+
+  .hero h1 {
+    font-size: 2.8rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+}
+
+.home-theme-toggle {
+  position: fixed;
+  top: 28px;
+  right: 32px;
+  z-index: 10;
+}
+
+[data-theme="dark"] .preview-card {
+  background: var(--surface);
+}
+
+[data-theme="dark"] .companion-card {
+  background: var(--surface-soft);
+}
+
+[data-theme="dark"] .secondary-button {
+  color: var(--text-main);
+  background: var(--surface);
+}
+
+[data-theme="dark"] .personality-details h3,
+[data-theme="dark"] .companion-card h3 {
+  color: var(--text-main);
+}
