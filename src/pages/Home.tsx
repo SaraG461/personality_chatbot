@@ -34,7 +34,8 @@ function Home() {
             Start Assessment
           </button>
 
-          <button className="secondary-button" type="button">
+          <button className="secondary-button" type="button"
+           onClick={() => navigate("/history")}>
             View Assessment History
           </button>
         </div>
@@ -59,11 +60,11 @@ function Home() {
         </div>
 
         <div className="companion-card">
-          <div className="avatar">L</div>
+          <div className="avatar">M</div>
 
           <div>
             <p className="small-label">Your AI companion</p>
-            <h3>Luna</h3>
+            <h3>May</h3>
             <p>Calm, supportive and reflective</p>
           </div>
         </div>
