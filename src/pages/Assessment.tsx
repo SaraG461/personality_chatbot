@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 
 import { assessmentQuestions } from "../data/assessmentQuestions";
-import { calculateAssessmentResult } from "../utils/calculateAssessmentResult";
-
 import {
   aiCompanions,
   personalityMatches,
 } from "../data/aiCompanions";
+
+import { saveAssessment } from "../services/assessmentService";
+import { calculateAssessmentResult } from "../utils/calculateAssessmentResult";
 
 import type { PersonalityType } from "../data/aiCompanions";
 
@@ -77,15 +78,15 @@ function Assessment() {
   const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
-
   const [isComplete, setIsComplete] = useState(false);
-
   const [showCompanion, setShowCompanion] = useState(false);
 
-  const currentQuestion = assessmentQuestions[currentIndex];
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [hasSaved, setHasSaved] = useState(false);
 
+  const currentQuestion = assessmentQuestions[currentIndex];
   const selectedAnswer = answers[currentQuestion.id];
 
   const progress = isComplete
@@ -131,6 +132,7 @@ function Assessment() {
     if (isComplete) {
       setIsComplete(false);
       setShowCompanion(false);
+      setSaveError("");
       return;
     }
 
@@ -138,6 +140,52 @@ function Assessment() {
       setCurrentIndex((previousIndex) => previousIndex - 1);
     }
   };
+
+  const handleSaveAssessment = async (): Promise<boolean> => {
+  if (
+    !result ||
+    !matchedPersonalityType ||
+    !matchedCompanion
+  ) {
+    return false;
+  }
+
+  if (hasSaved) {
+    return true;
+  }
+
+  try {
+    setIsSaving(true);
+    setSaveError("");
+
+    await saveAssessment({
+      result,
+      matchedPersonalityType,
+      companionName: matchedCompanion.name,
+    });
+
+    setHasSaved(true);
+    return true;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "The assessment could not be saved.";
+
+    setSaveError(message);
+    return false;
+  } finally {
+    setIsSaving(false);
+  }
+};
+
+const handleMeetCompanion = async () => {
+  const savedSuccessfully = await handleSaveAssessment();
+
+  if (savedSuccessfully) {
+    setShowCompanion(true);
+  }
+};
 
   if (isComplete && result && matchedCompanion) {
     return (
@@ -214,11 +262,24 @@ function Assessment() {
                 />
               </div>
 
+              {saveError && (
+                <p className="assessment-save-error">
+                  {saveError}
+                </p>
+              )}
+
+              {hasSaved && (
+                <p className="assessment-save-success">
+                  Your assessment was saved successfully.
+                </p>
+              )}
+
               <div className="completion-actions">
                 <button
                   className="assessment-secondary-button"
                   type="button"
                   onClick={handleBack}
+                  disabled={isSaving}
                 >
                   Review last answer
                 </button>
@@ -226,9 +287,12 @@ function Assessment() {
                 <button
                   className="assessment-primary-button"
                   type="button"
-                  onClick={() => setShowCompanion(true)}
+                  onClick={handleMeetCompanion}
+                  disabled={isSaving}
                 >
-                  Meet my AI companion →
+                  {isSaving
+                    ? "Saving result..."
+                    : "Meet my AI companion →"}
                 </button>
               </div>
             </>
@@ -317,7 +381,6 @@ function Assessment() {
 
           <div className="question-counter">
             <strong>{currentIndex + 1}</strong>
-
             <span>of {assessmentQuestions.length}</span>
           </div>
         </header>
@@ -335,7 +398,6 @@ function Assessment() {
         >
           <div className="question-category">
             <span className="category-dot" />
-
             {currentQuestion.category}
           </div>
 
