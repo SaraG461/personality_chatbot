@@ -74,3 +74,22 @@ export async function getAssessmentHistory(): Promise<
 
   return response.json();
 }
+
+export async function getAssessmentById(
+  assessmentId: number,
+): Promise<AssessmentHistoryItem> {
+  const response = await fetch(
+    `${API_BASE_URL}/assessments/${assessmentId}`,
+  );
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+
+    throw new Error(
+      errorBody?.error ??
+        "The assessment result could not be loaded.",
+    );
+  }
+
+  return response.json();
+}

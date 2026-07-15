@@ -7,6 +7,7 @@ import {
 import Home from "./pages/Home";
 import Assessment from "./pages/Assessment";
 import AssessmentHistory from "./pages/AssessmentHistory";
+import AssessmentResultDetails from "./pages/AssessmentResultDetails";
 
 function App() {
   return (
@@ -23,7 +24,16 @@ function App() {
           path="/history"
           element={<AssessmentHistory />}
         />
+
+        <Route
+        path="/history/:assessmentId"
+        element={<AssessmentResultDetails />}
+        />
       </Routes>
+
+      
+
+        
     </BrowserRouter>
   );
 }

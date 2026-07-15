@@ -99,6 +99,13 @@ def create_assessment():
 
     percentages = data["percentages"]
 
+    if not isinstance(percentages, dict):
+        return jsonify(
+            {
+                "error": "Percentages must be an object",
+            }
+        ), 400
+
     required_percentage_keys = [
         "E",
         "I",
@@ -147,6 +154,13 @@ def create_assessment():
             .execute()
         )
 
+        if not response.data:
+            return jsonify(
+                {
+                    "error": "The assessment was not saved",
+                }
+            ), 500
+
         return jsonify(response.data[0]), 201
 
     except Exception as error:
@@ -180,6 +194,39 @@ def get_assessments():
         return jsonify(
             {
                 "error": "Assessment history could not be retrieved",
+                "details": str(error),
+            }
+        ), 500
+
+
+@app.get("/api/assessments/<int:assessment_id>")
+def get_assessment_by_id(assessment_id):
+    try:
+        response = (
+            supabase.table("assessment_results")
+            .select("*")
+            .eq("id", assessment_id)
+            .limit(1)
+            .execute()
+        )
+
+        if not response.data:
+            return jsonify(
+                {
+                    "error": "Assessment result was not found",
+                }
+            ), 404
+
+        return jsonify(response.data[0]), 200
+
+    except Exception as error:
+        app.logger.exception(
+            "Failed to retrieve assessment result"
+        )
+
+        return jsonify(
+            {
+                "error": "The assessment result could not be retrieved",
                 "details": str(error),
             }
         ), 500

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AssessmentHistory.css";
 
+
 import ThemeToggle from "../components/ThemeToggle";
 
 import {
@@ -225,6 +226,7 @@ function AssessmentHistory() {
                   <button
                     className="history-secondary-button"
                     type="button"
+                    onClick={() => navigate(`/history/${assessment.id}`)}
                   >
                     View full result
                   </button>
