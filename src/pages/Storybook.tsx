@@ -89,7 +89,7 @@ function Storybook() {
           </p>
 
           <h1>
-            Meet {companion.name}
+            {companion.name}
           </h1>
 
           <p className="storybook-subtitle">

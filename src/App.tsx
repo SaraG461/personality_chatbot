@@ -10,6 +10,7 @@ import AssessmentHistory from "./pages/AssessmentHistory";
 import AssessmentResultDetails from "./pages/AssessmentResultDetails";
 import CompanionIntro from "./pages/CompanionIntro";
 import Storybook from "./pages/Storybook";
+import MeetCompanion from "./pages/MeetCompanion";
 
 function App() {
   return (
@@ -41,6 +42,11 @@ function App() {
           path="/storybook"
           element={<Storybook />}
         />
+
+        <Route
+        path="/meet-companion"
+        element={<MeetCompanion />}
+      />
 
       </Routes>
 

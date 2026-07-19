@@ -1,23 +1,18 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import ThemeToggle from "../components/ThemeToggle";
+import { aiCompanions } from "../data/aiCompanions";
 
-import { assessmentQuestions } from "../data/assessmentQuestions";
 import {
-  aiCompanions,
-  personalityMatches,
-} from "../data/aiCompanions";
+  getAssessmentById,
+  type AssessmentHistoryItem,
+} from "../services/assessmentService";
 
-import { saveAssessment } from "../services/assessmentService";
-import { calculateAssessmentResult } from "../utils/calculateAssessmentResult";
-
-import type { PersonalityType } from "../data/aiCompanions";
-
-import type {
-  AssessmentAnswers,
-  PersonalityLetter,
-} from "../types/Assessment";
+import type { PersonalityType } from "../data/types/companion";
 
 import "./Assessment.css";
 
@@ -39,7 +34,9 @@ function TraitBar({
   rightPercentage,
 }: TraitBarProps) {
   const dominantLetter =
-    leftPercentage >= rightPercentage ? leftLetter : rightLetter;
+    leftPercentage >= rightPercentage
+      ? leftLetter
+      : rightLetter;
 
   return (
     <div className="trait-result">
@@ -67,146 +64,77 @@ function TraitBar({
       <div className="trait-bar-track">
         <div
           className="trait-bar-left"
-          style={{ width: `${leftPercentage}%` }}
+          style={{
+            width: `${leftPercentage}%`,
+          }}
         />
       </div>
     </div>
   );
 }
 
-function Assessment() {
+function AssessmentResultDetails() {
   const navigate = useNavigate();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<AssessmentAnswers>({});
-  const [isComplete, setIsComplete] = useState(false);
-  const [showCompanion, setShowCompanion] = useState(false);
+  const { assessmentId } = useParams<{
+    assessmentId: string;
+  }>();
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [hasSaved, setHasSaved] = useState(false);
+  const [assessment, setAssessment] =
+    useState<AssessmentHistoryItem | null>(null);
 
-  const currentQuestion = assessmentQuestions[currentIndex];
-  const selectedAnswer = answers[currentQuestion.id];
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isRevealing, setIsRevealing] = useState(false);
 
-  const progress = isComplete
-    ? 100
-    : ((currentIndex + 1) / assessmentQuestions.length) * 100;
+  useEffect(() => {
+    const loadAssessment = async () => {
+      if (!assessmentId) {
+        setError("No assessment ID was provided.");
+        setIsLoading(false);
+        return;
+      }
 
-  const result = isComplete
-    ? calculateAssessmentResult(answers)
-    : null;
+      const numericAssessmentId = Number(assessmentId);
 
-  const userPersonalityType =
-    result?.personalityType as PersonalityType | undefined;
+      if (Number.isNaN(numericAssessmentId)) {
+        setError("The assessment ID is invalid.");
+        setIsLoading(false);
+        return;
+      }
 
-  const matchedPersonalityType = userPersonalityType
-    ? personalityMatches[userPersonalityType]
-    : undefined;
+      try {
+        setIsLoading(true);
+        setError("");
 
-  const matchedCompanion = matchedPersonalityType
-    ? aiCompanions[matchedPersonalityType]
-    : undefined;
+        const savedAssessment =
+          await getAssessmentById(numericAssessmentId);
 
-  const handleAnswer = (value: PersonalityLetter) => {
-    setAnswers((previousAnswers) => ({
-      ...previousAnswers,
-      [currentQuestion.id]: value,
-    }));
-  };
+        setAssessment(savedAssessment);
+      } catch (loadError) {
+        const message =
+          loadError instanceof Error
+            ? loadError.message
+            : "The assessment result could not be loaded.";
 
-  const handleNext = () => {
-    if (!selectedAnswer) {
-      return;
-    }
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    if (currentIndex === assessmentQuestions.length - 1) {
-      setIsComplete(true);
-      return;
-    }
+    loadAssessment();
+  }, [assessmentId]);
 
-    setCurrentIndex((previousIndex) => previousIndex + 1);
-  };
-
-  const handleBack = () => {
-    if (isComplete) {
-      setIsComplete(false);
-      setShowCompanion(false);
-      setSaveError("");
-      return;
-    }
-
-    if (currentIndex > 0) {
-      setCurrentIndex((previousIndex) => previousIndex - 1);
-    }
-  };
-
-  const handleSaveAssessment = async (): Promise<boolean> => {
-    if (
-      !result ||
-      !matchedPersonalityType ||
-      !matchedCompanion
-    ) {
-      return false;
-    }
-
-    if (hasSaved) {
-      return true;
-    }
-
-    try {
-      setIsSaving(true);
-      setSaveError("");
-
-      await saveAssessment({
-        result,
-        matchedPersonalityType,
-        companionName: matchedCompanion.name,
-      });
-
-      setHasSaved(true);
-      return true;
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "The assessment could not be saved.";
-
-      setSaveError(message);
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleMeetCompanion = async () => {
-    const savedSuccessfully = await handleSaveAssessment();
-
-    if (savedSuccessfully) {
-      setShowCompanion(true);
-    }
-  };
-
-  /*
-   * Temporary fallback screen.
-   *
-   * This appears when the assessment result has a valid matched
-   * personality, but that companion profile has not been created yet.
-   */
-  if (
-    isComplete &&
-    result &&
-    matchedPersonalityType &&
-    !matchedCompanion
-  ) {
+  if (isLoading) {
     return (
       <main className="assessment-page">
         <button
           className="assessment-home-button"
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/history")}
         >
-          ← Back to home
+          ← Back to history
         </button>
 
         <div className="assessment-theme-toggle">
@@ -214,337 +142,216 @@ function Assessment() {
         </div>
 
         <section className="assessment-complete-card">
-          <div className="completion-icon">✓</div>
-
           <p className="assessment-label">
-            Assessment complete
+            Loading assessment
           </p>
 
-          <h1>
-            Your personality type is {result.personalityType}
-          </h1>
-
-          <p className="completion-description">
-            Your compatible companion personality is{" "}
-            <strong>{matchedPersonalityType}</strong>.
-          </p>
-
-          <p className="completion-description">
-            This companion profile is still being created.
-          </p>
-
-          <div className="completion-actions">
-            <button
-              className="assessment-secondary-button"
-              type="button"
-              onClick={handleBack}
-            >
-              Review last answer
-            </button>
-
-            <button
-              className="assessment-primary-button"
-              type="button"
-              onClick={() => navigate("/")}
-            >
-              Return home
-            </button>
-          </div>
+          <h1>Getting your result...</h1>
         </section>
       </main>
     );
   }
 
-  /*
-   * Normal completed assessment screen.
-   *
-   * This appears when the matched companion profile exists.
-   */
-  if (
-    isComplete &&
-    result &&
-    matchedCompanion
-  ) {
+  if (error || !assessment) {
     return (
       <main className="assessment-page">
         <button
           className="assessment-home-button"
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/history")}
         >
-          ← Back to home
+          ← Back to history
         </button>
 
         <div className="assessment-theme-toggle">
           <ThemeToggle />
         </div>
 
-        <section
-          className={`assessment-complete-card ${
-            showCompanion ? "companion-card-reveal" : ""
-          }`}
-        >
-          {!showCompanion ? (
-            <>
-              <div className="completion-icon">✓</div>
+        <section className="assessment-complete-card">
+          <div className="completion-icon">!</div>
 
-              <p className="assessment-label">
-                Assessment complete
-              </p>
+          <p className="assessment-label">
+            Unable to load result
+          </p>
 
-              <h1>
-                Your personality type is {result.personalityType}
-              </h1>
+          <h1>We could not find this assessment</h1>
 
-              <p className="completion-description">
-                Your result was calculated from your preferences across social
-                energy, information style, decision-making and lifestyle.
-              </p>
+          <p className="assessment-save-error">
+            {error || "The assessment result was not found."}
+          </p>
 
-              <div className="trait-results-list">
-                <TraitBar
-                  leftLabel="Extraversion"
-                  leftLetter="E"
-                  leftPercentage={result.percentages.E}
-                  rightLabel="Introversion"
-                  rightLetter="I"
-                  rightPercentage={result.percentages.I}
-                />
-
-                <TraitBar
-                  leftLabel="Sensing"
-                  leftLetter="S"
-                  leftPercentage={result.percentages.S}
-                  rightLabel="Intuition"
-                  rightLetter="N"
-                  rightPercentage={result.percentages.N}
-                />
-
-                <TraitBar
-                  leftLabel="Thinking"
-                  leftLetter="T"
-                  leftPercentage={result.percentages.T}
-                  rightLabel="Feeling"
-                  rightLetter="F"
-                  rightPercentage={result.percentages.F}
-                />
-
-                <TraitBar
-                  leftLabel="Judging"
-                  leftLetter="J"
-                  leftPercentage={result.percentages.J}
-                  rightLabel="Perceiving"
-                  rightLetter="P"
-                  rightPercentage={result.percentages.P}
-                />
-              </div>
-
-              {saveError && (
-                <p className="assessment-save-error">
-                  {saveError}
-                </p>
-              )}
-
-              {hasSaved && (
-                <p className="assessment-save-success">
-                  Your assessment was saved successfully.
-                </p>
-              )}
-
-              <div className="completion-actions">
-                <button
-                  className="assessment-secondary-button"
-                  type="button"
-                  onClick={handleBack}
-                  disabled={isSaving}
-                >
-                  Review last answer
-                </button>
-
-                <button
-                  className="assessment-primary-button"
-                  type="button"
-                  onClick={handleMeetCompanion}
-                  disabled={isSaving}
-                >
-                  {isSaving
-                    ? "Saving result..."
-                    : "Meet my AI companion →"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="companion-introduction">
-              <p className="assessment-label">
-                Your companion match
-              </p>
-
-              <div className="companion-avatar-large">
-                {matchedCompanion.name.charAt(0)}
-              </div>
-
-              <p className="companion-intro-text">
-                Let me introduce you to
-              </p>
-
-              <h1>{matchedCompanion.name}</h1>
-
-              <span className="companion-type-badge">
-                {matchedCompanion.personalityType} ·{" "}
-                {matchedCompanion.title}
-              </span>
-
-              <p className="companion-description">
-                {matchedCompanion.shortDescription}
-              </p>
-
-              <blockquote className="companion-greeting">
-                “{matchedCompanion.greeting}”
-              </blockquote>
-
-              <p className="matching-explanation">
-                You are {result.personalityType}, and{" "}
-                {matchedCompanion.name} uses a{" "}
-                {matchedCompanion.personalityType} communication style selected
-                to complement your personality preferences.
-              </p>
-
-              <div className="completion-actions">
-                <button
-                  className="assessment-secondary-button"
-                  type="button"
-                  onClick={() => setShowCompanion(false)}
-                >
-                  ← View my result
-                </button>
-
-                <button
-                  className="assessment-primary-button"
-                  type="button"
-                >
-                  Start chatting with {matchedCompanion.name} →
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            className="assessment-primary-button"
+            type="button"
+            onClick={() => navigate("/history")}
+          >
+            Return to history
+          </button>
         </section>
       </main>
     );
   }
+
+  const matchedPersonalityType =
+    assessment.matched_personality_type as PersonalityType;
+
+  const matchedCompanion =
+    aiCompanions[matchedPersonalityType];
+
+  const formattedDate = new Date(
+    assessment.created_at,
+  ).toLocaleString("en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+
+  const handleRevealCompanion = () => {
+    if (!matchedCompanion || isRevealing) {
+      return;
+    }
+
+    setIsRevealing(true);
+
+    window.setTimeout(() => {
+      navigate("/meet-companion", {
+        state: {
+          userPersonalityType:
+            assessment.personality_type,
+          matchedPersonalityType:
+            assessment.matched_personality_type,
+          companion: matchedCompanion,
+        },
+      });
+    }, 1800);
+  };
 
   return (
     <main className="assessment-page">
       <button
         className="assessment-home-button"
         type="button"
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/history")}
       >
-        ← Back to home
+        ← Back to history
       </button>
 
       <div className="assessment-theme-toggle">
         <ThemeToggle />
       </div>
 
-      <section className="assessment-container">
-        <header className="assessment-header">
-          <div>
-            <p className="assessment-label">
-              Personality assessment
-            </p>
+      <section className="assessment-complete-card">
+        <p className="assessment-label">
+          Saved assessment result
+        </p>
 
-            <h1>Discover how your mind works</h1>
-          </div>
+        <h1>
+          Your personality type is{" "}
+          {assessment.personality_type}
+        </h1>
 
-          <div className="question-counter">
-            <strong>{currentIndex + 1}</strong>
-            <span>of {assessmentQuestions.length}</span>
-          </div>
-        </header>
+        <p className="completion-description">
+          Completed on {formattedDate}
+        </p>
 
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{ width: `${progress}%` }}
+        <div className="trait-results-list">
+          <TraitBar
+            leftLabel="Extraversion"
+            leftLetter="E"
+            leftPercentage={assessment.extraversion}
+            rightLabel="Introversion"
+            rightLetter="I"
+            rightPercentage={assessment.introversion}
+          />
+
+          <TraitBar
+            leftLabel="Sensing"
+            leftLetter="S"
+            leftPercentage={assessment.sensing}
+            rightLabel="Intuition"
+            rightLetter="N"
+            rightPercentage={assessment.intuition}
+          />
+
+          <TraitBar
+            leftLabel="Thinking"
+            leftLetter="T"
+            leftPercentage={assessment.thinking}
+            rightLabel="Feeling"
+            rightLetter="F"
+            rightPercentage={assessment.feeling}
+          />
+
+          <TraitBar
+            leftLabel="Judging"
+            leftLetter="J"
+            leftPercentage={assessment.judging}
+            rightLabel="Perceiving"
+            rightLetter="P"
+            rightPercentage={assessment.perceiving}
           />
         </div>
 
-        <section
-          className="question-card"
-          key={currentQuestion.id}
-        >
-          <div className="question-category">
-            <span className="category-dot" />
-            {currentQuestion.category}
-          </div>
+        <div className="companion-reveal-section">
+          {!isRevealing ? (
+            <>
+              <p className="assessment-label">
+                Your companion is waiting
+              </p>
 
-          <h2>{currentQuestion.question}</h2>
+              <h2>Ready to meet your companion?</h2>
 
-          <p className="question-help">
-            Choose the answer that feels most natural to you.
-          </p>
+              <p className="completion-description">
+                A companion has been selected to complement
+                your personality.
+              </p>
 
-          <div className="answer-list">
-            {currentQuestion.options.map(
-              (option, optionIndex) => {
-                const isSelected =
-                  selectedAnswer === option.value;
+              <button
+                className="assessment-primary-button"
+                type="button"
+                onClick={handleRevealCompanion}
+                disabled={!matchedCompanion}
+              >
+                ✨ Reveal your companion
+              </button>
 
-                return (
-                  <button
-                    className={`answer-card ${
-                      isSelected
-                        ? "answer-card-selected"
-                        : ""
-                    }`}
-                    type="button"
-                    key={option.value}
-                    onClick={() =>
-                      handleAnswer(option.value)
-                    }
-                  >
-                    <span className="answer-letter">
-                      {optionIndex === 0 ? "A" : "B"}
-                    </span>
+              {!matchedCompanion && (
+                <p className="assessment-save-error">
+                  The matched companion could not be found.
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="companion-searching">
+              <div className="reveal-spinner" />
 
-                    <span className="answer-text">
-                      {option.text}
-                    </span>
+              <p className="assessment-label">
+                Searching...
+              </p>
 
-                    <span className="answer-check">
-                      {isSelected ? "✓" : ""}
-                    </span>
-                  </button>
-                );
-              },
-            )}
-          </div>
-        </section>
+              <h2>
+                Finding the companion meant for you...
+              </h2>
 
-        <footer className="assessment-controls">
+              <p className="completion-description">
+                Preparing your introduction.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="completion-actions">
           <button
-            className="assessment-back-button"
+            className="assessment-secondary-button"
             type="button"
-            onClick={handleBack}
-            disabled={currentIndex === 0}
+            onClick={() => navigate("/history")}
+            disabled={isRevealing}
           >
-            ← Back
+            ← Assessment history
           </button>
-
-          <button
-            className="assessment-primary-button"
-            type="button"
-            onClick={handleNext}
-            disabled={!selectedAnswer}
-          >
-            {currentIndex === assessmentQuestions.length - 1
-              ? "Complete assessment"
-              : "Continue →"}
-          </button>
-        </footer>
+        </div>
       </section>
     </main>
   );
 }
 
-export default Assessment;
+export default AssessmentResultDetails;

@@ -4,15 +4,13 @@ import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 
 import { assessmentQuestions } from "../data/assessmentQuestions";
-import {
-  aiCompanions,
-  personalityMatches,
-} from "../data/aiCompanions";
+import { aiCompanions } from "../data/aiCompanions";
+import { personalityMatches } from "../data/personalityMatches";
 
 import { saveAssessment } from "../services/assessmentService";
 import { calculateAssessmentResult } from "../utils/calculateAssessmentResult";
 
-import type { PersonalityType } from "../data/aiCompanions";
+import type { PersonalityType } from "../data/types/companion";
 
 import type {
   AssessmentAnswers,
