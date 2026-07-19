@@ -187,7 +187,11 @@ const handleMeetCompanion = async () => {
   }
 };
 
-  if (isComplete && result && matchedCompanion) {
+  if (
+  isComplete &&
+  result &&
+  matchedCompanion
+) {
     return (
       <main className="assessment-page">
         <button
@@ -318,8 +322,8 @@ const handleMeetCompanion = async () => {
               </span>
 
               <p className="companion-description">
-                {matchedCompanion.description}
-              </p>
+              {matchedCompanion.shortDescription}
+            </p>
 
               <blockquote className="companion-greeting">
                 “{matchedCompanion.greeting}”
@@ -344,8 +348,17 @@ const handleMeetCompanion = async () => {
                 <button
                   className="assessment-primary-button"
                   type="button"
+                  onClick={() =>
+                    navigate("/storybook", {
+                      state: {
+                        userPersonalityType: result.personalityType,
+                        matchedPersonalityType,
+                        companion: matchedCompanion,
+                      },
+                    })
+                  }
                 >
-                  Start chatting with {matchedCompanion.name} →
+                  📖 Open {matchedCompanion.name}'s storybook
                 </button>
               </div>
             </div>

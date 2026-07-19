@@ -1,230 +1,550 @@
-import { useEffect, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import ThemeToggle from "../components/ThemeToggle";
-import "./AssessmentResultDetails.css";
 
+import { assessmentQuestions } from "../data/assessmentQuestions";
 import {
-  getAssessmentById,
-  type AssessmentHistoryItem,
-} from "../services/assessmentService";
+  aiCompanions,
+  personalityMatches,
+} from "../data/aiCompanions";
 
-import "./AssessmentResultDetails.css";
+import { saveAssessment } from "../services/assessmentService";
+import { calculateAssessmentResult } from "../utils/calculateAssessmentResult";
 
-type TraitRowProps = {
+import type { PersonalityType } from "../data/aiCompanions";
+
+import type {
+  AssessmentAnswers,
+  PersonalityLetter,
+} from "../types/Assessment";
+
+import "./Assessment.css";
+
+type TraitBarProps = {
   leftLabel: string;
-  leftValue: number;
+  leftLetter: string;
+  leftPercentage: number;
   rightLabel: string;
-  rightValue: number;
+  rightLetter: string;
+  rightPercentage: number;
 };
 
-function TraitRow({
+function TraitBar({
   leftLabel,
-  leftValue,
+  leftLetter,
+  leftPercentage,
   rightLabel,
-  rightValue,
-}: TraitRowProps) {
+  rightLetter,
+  rightPercentage,
+}: TraitBarProps) {
+  const dominantLetter =
+    leftPercentage >= rightPercentage ? leftLetter : rightLetter;
+
   return (
-    <div className="result-detail-trait">
-      <div className="result-detail-trait-labels">
-        <span>
-          {leftLabel}: {leftValue}%
+    <div className="trait-result">
+      <div className="trait-result-heading">
+        <div>
+          <strong>{leftLetter}</strong>
+          <span>{leftLabel}</span>
+        </div>
+
+        <span className="dominant-trait">
+          Stronger preference: {dominantLetter}
         </span>
 
-        <span>
-          {rightLabel}: {rightValue}%
-        </span>
+        <div>
+          <strong>{rightLetter}</strong>
+          <span>{rightLabel}</span>
+        </div>
       </div>
 
-      <div className="result-detail-trait-track">
+      <div className="trait-percentages">
+        <span>{leftPercentage}%</span>
+        <span>{rightPercentage}%</span>
+      </div>
+
+      <div className="trait-bar-track">
         <div
-          className="result-detail-trait-fill"
-          style={{ width: `${leftValue}%` }}
+          className="trait-bar-left"
+          style={{ width: `${leftPercentage}%` }}
         />
       </div>
     </div>
   );
 }
 
-function AssessmentResultDetails() {
+function Assessment() {
   const navigate = useNavigate();
-  const { assessmentId } = useParams();
 
-  const [assessment, setAssessment] =
-    useState<AssessmentHistoryItem | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<AssessmentAnswers>({});
+  const [isComplete, setIsComplete] = useState(false);
+  const [showCompanion, setShowCompanion] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [hasSaved, setHasSaved] = useState(false);
 
-  useEffect(() => {
-    const loadAssessment = async () => {
-      const parsedId = Number(assessmentId);
+  const currentQuestion = assessmentQuestions[currentIndex];
+  const selectedAnswer = answers[currentQuestion.id];
 
-      if (!Number.isInteger(parsedId) || parsedId <= 0) {
-        setError("This assessment ID is not valid.");
-        setIsLoading(false);
-        return;
-      }
+  const progress = isComplete
+    ? 100
+    : ((currentIndex + 1) / assessmentQuestions.length) * 100;
 
-      try {
-        setIsLoading(true);
-        setError("");
+  const result = isComplete
+    ? calculateAssessmentResult(answers)
+    : null;
 
-        const result = await getAssessmentById(parsedId);
+  const userPersonalityType =
+    result?.personalityType as PersonalityType | undefined;
 
-        setAssessment(result);
-      } catch (caughtError) {
-        const message =
-          caughtError instanceof Error
-            ? caughtError.message
-            : "The assessment result could not be loaded.";
+  const matchedPersonalityType = userPersonalityType
+    ? personalityMatches[userPersonalityType]
+    : undefined;
 
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const matchedCompanion = matchedPersonalityType
+    ? aiCompanions[matchedPersonalityType]
+    : undefined;
 
-    void loadAssessment();
-  }, [assessmentId]);
-
-  const formatDate = (dateValue: string) => {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(dateValue));
+  const handleAnswer = (value: PersonalityLetter) => {
+    setAnswers((previousAnswers) => ({
+      ...previousAnswers,
+      [currentQuestion.id]: value,
+    }));
   };
 
+  const handleNext = () => {
+    if (!selectedAnswer) {
+      return;
+    }
+
+    if (currentIndex === assessmentQuestions.length - 1) {
+      setIsComplete(true);
+      return;
+    }
+
+    setCurrentIndex((previousIndex) => previousIndex + 1);
+  };
+
+  const handleBack = () => {
+    if (isComplete) {
+      setIsComplete(false);
+      setShowCompanion(false);
+      setSaveError("");
+      return;
+    }
+
+    if (currentIndex > 0) {
+      setCurrentIndex((previousIndex) => previousIndex - 1);
+    }
+  };
+
+  const handleSaveAssessment = async (): Promise<boolean> => {
+    if (
+      !result ||
+      !matchedPersonalityType ||
+      !matchedCompanion
+    ) {
+      return false;
+    }
+
+    if (hasSaved) {
+      return true;
+    }
+
+    try {
+      setIsSaving(true);
+      setSaveError("");
+
+      await saveAssessment({
+        result,
+        matchedPersonalityType,
+        companionName: matchedCompanion.name,
+      });
+
+      setHasSaved(true);
+      return true;
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be saved.";
+
+      setSaveError(message);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleMeetCompanion = async () => {
+    const savedSuccessfully = await handleSaveAssessment();
+
+    if (savedSuccessfully) {
+      setShowCompanion(true);
+    }
+  };
+
+  /*
+   * Temporary fallback screen.
+   *
+   * This appears when the assessment result has a valid matched
+   * personality, but that companion profile has not been created yet.
+   */
+  if (
+    isComplete &&
+    result &&
+    matchedPersonalityType &&
+    !matchedCompanion
+  ) {
+    return (
+      <main className="assessment-page">
+        <button
+          className="assessment-home-button"
+          type="button"
+          onClick={() => navigate("/")}
+        >
+          ← Back to home
+        </button>
+
+        <div className="assessment-theme-toggle">
+          <ThemeToggle />
+        </div>
+
+        <section className="assessment-complete-card">
+          <div className="completion-icon">✓</div>
+
+          <p className="assessment-label">
+            Assessment complete
+          </p>
+
+          <h1>
+            Your personality type is {result.personalityType}
+          </h1>
+
+          <p className="completion-description">
+            Your compatible companion personality is{" "}
+            <strong>{matchedPersonalityType}</strong>.
+          </p>
+
+          <p className="completion-description">
+            This companion profile is still being created.
+          </p>
+
+          <div className="completion-actions">
+            <button
+              className="assessment-secondary-button"
+              type="button"
+              onClick={handleBack}
+            >
+              Review last answer
+            </button>
+
+            <button
+              className="assessment-primary-button"
+              type="button"
+              onClick={() => navigate("/")}
+            >
+              Return home
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * Normal completed assessment screen.
+   *
+   * This appears when the matched companion profile exists.
+   */
+  if (
+    isComplete &&
+    result &&
+    matchedCompanion
+  ) {
+    return (
+      <main className="assessment-page">
+        <button
+          className="assessment-home-button"
+          type="button"
+          onClick={() => navigate("/")}
+        >
+          ← Back to home
+        </button>
+
+        <div className="assessment-theme-toggle">
+          <ThemeToggle />
+        </div>
+
+        <section
+          className={`assessment-complete-card ${
+            showCompanion ? "companion-card-reveal" : ""
+          }`}
+        >
+          {!showCompanion ? (
+            <>
+              <div className="completion-icon">✓</div>
+
+              <p className="assessment-label">
+                Assessment complete
+              </p>
+
+              <h1>
+                Your personality type is {result.personalityType}
+              </h1>
+
+              <p className="completion-description">
+                Your result was calculated from your preferences across social
+                energy, information style, decision-making and lifestyle.
+              </p>
+
+              <div className="trait-results-list">
+                <TraitBar
+                  leftLabel="Extraversion"
+                  leftLetter="E"
+                  leftPercentage={result.percentages.E}
+                  rightLabel="Introversion"
+                  rightLetter="I"
+                  rightPercentage={result.percentages.I}
+                />
+
+                <TraitBar
+                  leftLabel="Sensing"
+                  leftLetter="S"
+                  leftPercentage={result.percentages.S}
+                  rightLabel="Intuition"
+                  rightLetter="N"
+                  rightPercentage={result.percentages.N}
+                />
+
+                <TraitBar
+                  leftLabel="Thinking"
+                  leftLetter="T"
+                  leftPercentage={result.percentages.T}
+                  rightLabel="Feeling"
+                  rightLetter="F"
+                  rightPercentage={result.percentages.F}
+                />
+
+                <TraitBar
+                  leftLabel="Judging"
+                  leftLetter="J"
+                  leftPercentage={result.percentages.J}
+                  rightLabel="Perceiving"
+                  rightLetter="P"
+                  rightPercentage={result.percentages.P}
+                />
+              </div>
+
+              {saveError && (
+                <p className="assessment-save-error">
+                  {saveError}
+                </p>
+              )}
+
+              {hasSaved && (
+                <p className="assessment-save-success">
+                  Your assessment was saved successfully.
+                </p>
+              )}
+
+              <div className="completion-actions">
+                <button
+                  className="assessment-secondary-button"
+                  type="button"
+                  onClick={handleBack}
+                  disabled={isSaving}
+                >
+                  Review last answer
+                </button>
+
+                <button
+                  className="assessment-primary-button"
+                  type="button"
+                  onClick={handleMeetCompanion}
+                  disabled={isSaving}
+                >
+                  {isSaving
+                    ? "Saving result..."
+                    : "Meet my AI companion →"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="companion-introduction">
+              <p className="assessment-label">
+                Your companion match
+              </p>
+
+              <div className="companion-avatar-large">
+                {matchedCompanion.name.charAt(0)}
+              </div>
+
+              <p className="companion-intro-text">
+                Let me introduce you to
+              </p>
+
+              <h1>{matchedCompanion.name}</h1>
+
+              <span className="companion-type-badge">
+                {matchedCompanion.personalityType} ·{" "}
+                {matchedCompanion.title}
+              </span>
+
+              <p className="companion-description">
+                {matchedCompanion.shortDescription}
+              </p>
+
+              <blockquote className="companion-greeting">
+                “{matchedCompanion.greeting}”
+              </blockquote>
+
+              <p className="matching-explanation">
+                You are {result.personalityType}, and{" "}
+                {matchedCompanion.name} uses a{" "}
+                {matchedCompanion.personalityType} communication style selected
+                to complement your personality preferences.
+              </p>
+
+              <div className="completion-actions">
+                <button
+                  className="assessment-secondary-button"
+                  type="button"
+                  onClick={() => setShowCompanion(false)}
+                >
+                  ← View my result
+                </button>
+
+                <button
+                  className="assessment-primary-button"
+                  type="button"
+                >
+                  Start chatting with {matchedCompanion.name} →
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
+
   return (
-    <main className="result-details-page">
+    <main className="assessment-page">
       <button
-        className="result-details-back-button"
+        className="assessment-home-button"
         type="button"
-        onClick={() => navigate("/history")}
+        onClick={() => navigate("/")}
       >
-        ← Back to history
+        ← Back to home
       </button>
 
-      <div className="result-details-theme-toggle">
+      <div className="assessment-theme-toggle">
         <ThemeToggle />
       </div>
 
-      {isLoading && (
-        <section className="result-details-message-card">
-          <div className="result-details-loader" />
+      <section className="assessment-container">
+        <header className="assessment-header">
+          <div>
+            <p className="assessment-label">
+              Personality assessment
+            </p>
 
-          <h1>Loading your result</h1>
+            <h1>Discover how your mind works</h1>
+          </div>
+
+          <div className="question-counter">
+            <strong>{currentIndex + 1}</strong>
+            <span>of {assessmentQuestions.length}</span>
+          </div>
+        </header>
+
+        <div className="progress-track">
+          <div
+            className="progress-fill"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <section
+          className="question-card"
+          key={currentQuestion.id}
+        >
+          <div className="question-category">
+            <span className="category-dot" />
+            {currentQuestion.category}
+          </div>
+
+          <h2>{currentQuestion.question}</h2>
+
+          <p className="question-help">
+            Choose the answer that feels most natural to you.
+          </p>
+
+          <div className="answer-list">
+            {currentQuestion.options.map(
+              (option, optionIndex) => {
+                const isSelected =
+                  selectedAnswer === option.value;
+
+                return (
+                  <button
+                    className={`answer-card ${
+                      isSelected
+                        ? "answer-card-selected"
+                        : ""
+                    }`}
+                    type="button"
+                    key={option.value}
+                    onClick={() =>
+                      handleAnswer(option.value)
+                    }
+                  >
+                    <span className="answer-letter">
+                      {optionIndex === 0 ? "A" : "B"}
+                    </span>
+
+                    <span className="answer-text">
+                      {option.text}
+                    </span>
+
+                    <span className="answer-check">
+                      {isSelected ? "✓" : ""}
+                    </span>
+                  </button>
+                );
+              },
+            )}
+          </div>
         </section>
-      )}
 
-      {!isLoading && error && (
-        <section className="result-details-message-card">
-          <div className="result-details-message-icon">!</div>
-
-          <h1>We could not load this result</h1>
-
-          <p>{error}</p>
+        <footer className="assessment-controls">
+          <button
+            className="assessment-back-button"
+            type="button"
+            onClick={handleBack}
+            disabled={currentIndex === 0}
+          >
+            ← Back
+          </button>
 
           <button
-            className="result-details-primary-button"
+            className="assessment-primary-button"
             type="button"
-            onClick={() => navigate("/history")}
+            onClick={handleNext}
+            disabled={!selectedAnswer}
           >
-            Return to history
+            {currentIndex === assessmentQuestions.length - 1
+              ? "Complete assessment"
+              : "Continue →"}
           </button>
-        </section>
-      )}
-
-      {!isLoading && !error && assessment && (
-        <section className="result-details-container">
-          <header className="result-details-header">
-            <p className="result-details-label">
-              Personality result
-            </p>
-
-            <h1>{assessment.personality_type}</h1>
-
-            <p>
-              Completed on {formatDate(assessment.created_at)}
-            </p>
-          </header>
-
-          <section className="result-details-card">
-            <div className="result-details-companion">
-              <div className="result-details-avatar">
-                {assessment.companion_name
-                  .charAt(0)
-                  .toUpperCase()}
-              </div>
-
-              <div>
-                <span>Your matched AI companion</span>
-
-                <h2>{assessment.companion_name}</h2>
-
-                <p>
-                  {assessment.matched_personality_type} personality
-                </p>
-              </div>
-            </div>
-
-            <div className="result-details-traits">
-              <TraitRow
-                leftLabel="Extraversion"
-                leftValue={assessment.extraversion}
-                rightLabel="Introversion"
-                rightValue={assessment.introversion}
-              />
-
-              <TraitRow
-                leftLabel="Sensing"
-                leftValue={assessment.sensing}
-                rightLabel="Intuition"
-                rightValue={assessment.intuition}
-              />
-
-              <TraitRow
-                leftLabel="Thinking"
-                leftValue={assessment.thinking}
-                rightLabel="Feeling"
-                rightValue={assessment.feeling}
-              />
-
-              <TraitRow
-                leftLabel="Judging"
-                leftValue={assessment.judging}
-                rightLabel="Perceiving"
-                rightValue={assessment.perceiving}
-              />
-            </div>
-
-            <div className="result-details-actions">
-              <button
-                className="result-details-secondary-button"
-                type="button"
-                onClick={() => navigate("/assessment")}
-              >
-                Retake assessment
-              </button>
-
-              <button
-                className="result-details-primary-button"
-                type="button"
-              >
-                Start chatting with {assessment.companion_name}
-              </button>
-            </div>
-          </section>
-        </section>
-      )}
+        </footer>
+      </section>
     </main>
   );
 }
 
-export default AssessmentResultDetails;
+export default Assessment;

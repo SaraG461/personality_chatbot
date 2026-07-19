@@ -6,16 +6,16 @@ import type {
   PersonalityLetter,
 } from "../types/Assessment";
 
-const personalityLetters: PersonalityLetter[] = [
-  "E",
-  "I",
-  "S",
-  "N",
-  "T",
-  "F",
-  "J",
-  "P",
-];
+// const personalityLetters: PersonalityLetter[] = [
+//   "E",
+//   "I",
+//   "S",
+//   "N",
+//   "T",
+//   "F",
+//   "J",
+//   "P",
+// ];
 
 export function calculateAssessmentResult(
   answers: AssessmentAnswers,

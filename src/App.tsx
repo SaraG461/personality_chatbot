@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import Assessment from "./pages/Assessment";
 import AssessmentHistory from "./pages/AssessmentHistory";
 import AssessmentResultDetails from "./pages/AssessmentResultDetails";
+import CompanionIntro from "./pages/CompanionIntro";
+import Storybook from "./pages/Storybook";
 
 function App() {
   return (
@@ -29,6 +31,17 @@ function App() {
         path="/history/:assessmentId"
         element={<AssessmentResultDetails />}
         />
+
+        <Route
+          path="/companion"
+          element={<CompanionIntro />}
+        />
+
+        <Route
+          path="/storybook"
+          element={<Storybook />}
+        />
+
       </Routes>
 
       
