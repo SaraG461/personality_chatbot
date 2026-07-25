@@ -2,10 +2,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import ThemeToggle from "../components/ThemeToggle";
 
-import { aiCompanions } from "../data/aiCompanions";
+
 
 import type {
-  AICompanion,
+  AiCompanion,
   PersonalityType,
 } from "../data/types/companion";
 
@@ -14,7 +14,7 @@ import "./Storybook.css";
 type StorybookLocationState = {
   userPersonalityType?: PersonalityType;
   matchedPersonalityType?: PersonalityType;
-  companion?: AICompanion;
+  companion?: AiCompanion;
 };
 
 function Storybook() {

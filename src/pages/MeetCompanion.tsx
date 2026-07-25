@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 
 import type {
-  AICompanion,
+  AiCompanion,
   PersonalityType,
 } from "../data/types/companion";
 
@@ -12,7 +12,7 @@ import "./MeetCompanion.css";
 type MeetCompanionLocationState = {
   userPersonalityType: PersonalityType;
   matchedPersonalityType: PersonalityType;
-  companion: AICompanion;
+  companion: AiCompanion;
 };
 
 function MeetCompanion() {

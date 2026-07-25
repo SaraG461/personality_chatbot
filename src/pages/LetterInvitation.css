@@ -1,0 +1,499 @@
+.letter-invitation-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5rem 1.5rem 3rem;
+
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(133, 79, 177, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      #120e19 0%,
+      #1a1424 50%,
+      #100c17 100%
+    );
+
+  color: #f7effc;
+}
+
+.letter-theme-toggle {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+}
+
+.letter-background-glow {
+  position: absolute;
+  width: 22rem;
+  height: 22rem;
+
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.letter-glow-one {
+  top: -10rem;
+  left: -8rem;
+  background: rgba(143, 77, 188, 0.16);
+}
+
+.letter-glow-two {
+  right: -10rem;
+  bottom: -12rem;
+  background: rgba(204, 145, 235, 0.12);
+}
+
+.letter-invitation-content {
+  position: relative;
+  z-index: 2;
+
+  width: min(100%, 680px);
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  animation: invitationFadeIn 700ms ease both;
+}
+
+.letter-eyebrow {
+  margin: 0 0 2rem;
+
+  color: #c99bea;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+}
+
+/* Envelope */
+
+.magical-envelope {
+  position: relative;
+  width: 220px;
+  height: 155px;
+
+  margin: 0 0 2.4rem;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  animation: envelopeFloat 4s ease-in-out infinite;
+}
+
+.envelope-glow {
+  position: absolute;
+  inset: 20px 8px -18px;
+
+  border-radius: 50%;
+  background: rgba(193, 132, 228, 0.26);
+  filter: blur(24px);
+
+  transition:
+    transform 250ms ease,
+    opacity 250ms ease;
+}
+
+.envelope-body {
+  position: absolute;
+  inset: 0;
+
+  border: 1px solid rgba(115, 73, 42, 0.25);
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f0dfbd 0%,
+      #d9bf91 100%
+    );
+
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.envelope-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* The letter visible inside the envelope */
+
+.envelope-letter {
+  position: absolute;
+  z-index: 1;
+
+  left: 20px;
+  right: 20px;
+  top: 13px;
+  height: 95px;
+
+  padding: 25px 24px;
+
+  border-radius: 5px 5px 2px 2px;
+  background:
+    linear-gradient(
+      180deg,
+      #fffaf0,
+      #efe1c7
+    );
+
+  box-shadow: 0 3px 10px rgba(70, 43, 23, 0.16);
+
+  transition: transform 350ms ease;
+}
+
+.letter-line {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-bottom: 9px;
+
+  border-radius: 999px;
+  background: rgba(106, 76, 57, 0.25);
+}
+
+.letter-line-short {
+  width: 42%;
+}
+
+.letter-line-medium {
+  width: 72%;
+}
+
+/* Envelope folds */
+
+.envelope-left-fold {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+
+  border-radius: 8px;
+
+  clip-path: polygon(
+    0 0,
+    52% 55%,
+    0 100%
+  );
+
+  background: linear-gradient(
+    145deg,
+    #e7cea0,
+    #cdae78
+  );
+}
+
+.envelope-right-fold {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+
+  border-radius: 8px;
+
+  clip-path: polygon(
+    100% 0,
+    48% 55%,
+    100% 100%
+  );
+
+  background: linear-gradient(
+    215deg,
+    #ead3a6,
+    #c8a872
+  );
+}
+
+.envelope-bottom-fold {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+
+  border-radius: 8px;
+
+  clip-path: polygon(
+    0 100%,
+    50% 48%,
+    100% 100%
+  );
+
+  background: linear-gradient(
+    180deg,
+    #dec28d,
+    #bf9d68
+  );
+}
+
+.envelope-flap {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+
+  border-radius: 8px;
+
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    50% 63%
+  );
+
+  transform-origin: top center;
+
+  background: linear-gradient(
+    180deg,
+    #f1dfbb,
+    #d4b47d
+  );
+
+  filter: drop-shadow(
+    0 4px 3px rgba(81, 52, 28, 0.12)
+  );
+
+  transition: transform 350ms ease;
+}
+
+/* Wax seal */
+
+.wax-seal {
+  position: absolute;
+  z-index: 6;
+
+  left: 50%;
+  top: 55%;
+
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  border: 2px solid rgba(255, 214, 220, 0.25);
+  border-radius: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #c95f7a,
+      #7d263e 72%
+    );
+
+  color: #f5c9d3;
+  font-size: 1rem;
+
+  box-shadow:
+    0 5px 10px rgba(62, 18, 31, 0.35),
+    inset 0 0 0 3px rgba(86, 22, 41, 0.2);
+
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.magical-envelope:hover .envelope-body {
+  transform: translateY(-5px) scale(1.02);
+
+  box-shadow:
+    0 31px 65px rgba(0, 0, 0, 0.48),
+    0 0 28px rgba(190, 128, 225, 0.12);
+}
+
+.magical-envelope:hover .envelope-letter {
+  transform: translateY(-10px);
+}
+
+.magical-envelope:hover .wax-seal {
+  transform:
+    translate(-50%, -50%)
+    scale(1.08);
+}
+
+.magical-envelope:hover .envelope-glow {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* Text */
+
+.letter-invitation-copy h1 {
+  max-width: 620px;
+  margin: 0 0 1.3rem;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+
+  color: #fbf5ff;
+}
+
+.letter-invitation-copy p {
+  max-width: 550px;
+  margin: 0 auto 0.7rem;
+
+  color: #bdb2c6;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.letter-invitation-copy
+.letter-companion-hint {
+  margin-top: 0.95rem;
+  color: #d5c1df;
+}
+
+/* Button */
+
+.open-letter-button {
+  min-width: 210px;
+  margin-top: 1.8rem;
+  padding: 0.95rem 1.5rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+
+  border: 1px solid rgba(229, 193, 250, 0.28);
+  border-radius: 999px;
+
+  background: linear-gradient(
+    135deg,
+    #7f43aa,
+    #b875dc
+  );
+
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1rem;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 14px 35px rgba(127, 67, 170, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.open-letter-button:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 20px 42px rgba(127, 67, 170, 0.45),
+    0 0 22px rgba(197, 139, 229, 0.16);
+}
+
+.open-letter-button:active {
+  transform: translateY(0);
+}
+
+.open-letter-arrow {
+  font-size: 1.15rem;
+  transition: transform 180ms ease;
+}
+
+.open-letter-button:hover
+.open-letter-arrow {
+  transform: translateX(5px);
+}
+
+.letter-small-hint {
+  margin: 0.85rem 0 0;
+
+  color: #776d80;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
+/* Animations */
+
+@keyframes invitationFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes envelopeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (max-width: 600px) {
+  .letter-invitation-page {
+    align-items: flex-start;
+    padding-top: 5.5rem;
+  }
+
+  .magical-envelope {
+    width: 185px;
+    height: 130px;
+    margin-bottom: 2rem;
+  }
+
+  .letter-invitation-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .letter-invitation-copy p {
+    font-size: 0.93rem;
+  }
+
+  .wax-seal {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-invitation-content,
+  .magical-envelope {
+    animation: none;
+  }
+
+  .envelope-body,
+  .envelope-letter,
+  .wax-seal,
+  .open-letter-button,
+  .open-letter-arrow {
+    transition: none;
+  }
+}

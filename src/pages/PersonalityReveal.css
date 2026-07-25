@@ -1,0 +1,392 @@
+.personality-reveal-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 5rem 1.25rem 3rem;
+  isolation: isolate;
+  color: #f9f5ff;
+  background:
+    radial-gradient(
+      circle at 50% 28%,
+      rgba(177, 112, 236, 0.2),
+      transparent 32%
+    ),
+    linear-gradient(
+      145deg,
+      #0d0912 0%,
+      #191120 48%,
+      #0d0912 100%
+    );
+}
+
+.personality-reveal-theme {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 10;
+}
+
+.personality-reveal-content {
+  position: relative;
+  z-index: 4;
+  width: min(100%, 700px);
+  text-align: center;
+  animation: personalityContentAppear 1.2s ease both;
+}
+
+.personality-reveal-chapter {
+  margin: 0 0 1.5rem;
+  color: #c58bed;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.personality-reveal-letter {
+  position: relative;
+  width: 150px;
+  height: 105px;
+  margin: 0 auto 2rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(220, 180, 250, 0.38);
+  border-radius: 9px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(177, 112, 224, 0.2),
+      rgba(255, 255, 255, 0.04)
+    );
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.35),
+    0 0 40px rgba(181, 105, 236, 0.17);
+  animation:
+    personalityLetterFloat 3.5s ease-in-out infinite,
+    personalityLetterGlow 2.8s ease-in-out infinite;
+}
+
+.personality-reveal-letter::before,
+.personality-reveal-letter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.personality-reveal-letter::before {
+  clip-path: polygon(0 0, 50% 56%, 100% 0);
+  background: rgba(218, 174, 248, 0.13);
+}
+
+.personality-reveal-letter::after {
+  clip-path: polygon(
+    0 100%,
+    50% 45%,
+    100% 100%
+  );
+  background: rgba(100, 55, 128, 0.18);
+}
+
+.personality-reveal-letter span {
+  position: relative;
+  z-index: 2;
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #f1d9ff;
+  background: #8751aa;
+  box-shadow: 0 0 22px rgba(213, 153, 251, 0.45);
+}
+
+.personality-reveal-eyebrow {
+  margin: 0 0 0.85rem;
+  color: #baafc3;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.personality-reveal-content h1 {
+  max-width: 660px;
+  margin: 0 auto;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.personality-reveal-description {
+  max-width: 570px;
+  margin: 1.5rem auto 2.1rem;
+  color: #c4bacb;
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  line-height: 1.75;
+  text-wrap: balance;
+}
+
+.personality-reveal-button {
+  min-width: min(100%, 260px);
+  padding: 1rem 1.5rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 15px;
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #995fc2,
+      #d0a2ed
+    );
+  box-shadow:
+    0 15px 38px rgba(151, 81, 199, 0.33),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.13);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.personality-reveal-button:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.06);
+  box-shadow:
+    0 20px 45px rgba(151, 81, 199, 0.43),
+    0 0 25px rgba(210, 157, 242, 0.16);
+}
+
+.personality-reveal-button:active {
+  transform: translateY(0);
+}
+
+.personality-reveal-back {
+  display: block;
+  margin: 1.25rem auto 0;
+  padding: 0.5rem;
+  border: 0;
+  color: #94899e;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.personality-reveal-back:hover {
+  color: #e7dfed;
+}
+
+.personality-reveal-glow {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  filter: blur(85px);
+  pointer-events: none;
+}
+
+.personality-reveal-glow-one {
+  width: 330px;
+  height: 330px;
+  top: -130px;
+  right: -70px;
+  background: rgba(177, 94, 235, 0.32);
+  animation: personalityGlowMove 10s ease-in-out infinite;
+}
+
+.personality-reveal-glow-two {
+  width: 300px;
+  height: 300px;
+  bottom: -140px;
+  left: -70px;
+  background: rgba(101, 50, 143, 0.32);
+  animation: personalityGlowMove 12s ease-in-out infinite reverse;
+}
+
+.personality-reveal-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.personality-reveal-stars span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(232, 205, 251, 0.8);
+  box-shadow: 0 0 12px rgba(222, 177, 249, 0.75);
+  animation: personalityStarPulse 3s ease-in-out infinite;
+}
+
+.personality-reveal-stars span:nth-child(1) {
+  top: 15%;
+  left: 11%;
+}
+
+.personality-reveal-stars span:nth-child(2) {
+  top: 28%;
+  right: 13%;
+  animation-delay: 0.7s;
+}
+
+.personality-reveal-stars span:nth-child(3) {
+  top: 66%;
+  left: 17%;
+  animation-delay: 1.2s;
+}
+
+.personality-reveal-stars span:nth-child(4) {
+  top: 74%;
+  right: 19%;
+  animation-delay: 1.8s;
+}
+
+.personality-reveal-stars span:nth-child(5) {
+  top: 44%;
+  left: 6%;
+  animation-delay: 2.2s;
+}
+
+.personality-reveal-stars span:nth-child(6) {
+  top: 52%;
+  right: 7%;
+  animation-delay: 0.4s;
+}
+
+.personality-reveal-error {
+  position: relative;
+  z-index: 4;
+  width: min(100%, 500px);
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px solid rgba(205, 160, 238, 0.2);
+  border-radius: 24px;
+  background: rgba(39, 28, 47, 0.86);
+  backdrop-filter: blur(14px);
+}
+
+.personality-reveal-error > span {
+  color: #d19bee;
+  font-size: 2rem;
+}
+
+.personality-reveal-error h1 {
+  margin: 1rem 0;
+}
+
+.personality-reveal-error p {
+  color: #bcb1c4;
+  line-height: 1.7;
+}
+
+.personality-reveal-error button {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1.2rem;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  background: #a066c4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes personalityContentAppear {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes personalityLetterFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes personalityLetterGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 24px 55px rgba(0, 0, 0, 0.35),
+      0 0 25px rgba(181, 105, 236, 0.13);
+  }
+
+  50% {
+    box-shadow:
+      0 27px 60px rgba(0, 0, 0, 0.38),
+      0 0 48px rgba(181, 105, 236, 0.29);
+  }
+}
+
+@keyframes personalityStarPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.65);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes personalityGlowMove {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(38px, 28px);
+  }
+}
+
+@media (max-width: 600px) {
+  .personality-reveal-page {
+    padding-inline: 1rem;
+  }
+
+  .personality-reveal-content h1 {
+    font-size: clamp(2.45rem, 13vw, 3.7rem);
+  }
+
+  .personality-reveal-letter {
+    width: 130px;
+    height: 92px;
+  }
+
+  .personality-reveal-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .personality-reveal-page *,
+  .personality-reveal-page *::before,
+  .personality-reveal-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

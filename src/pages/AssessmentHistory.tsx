@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./AssessmentHistory.css";
-
 
 import ThemeToggle from "../components/ThemeToggle";
+
+import { aiCompanions } from "../data/aiCompanions";
+
+import type {
+  AiCompanion,
+  PersonalityType,
+} from "../data/types/companion";
 
 import {
   getAssessmentHistory,
@@ -62,6 +67,68 @@ function AssessmentHistory() {
     }).format(parsedDate);
   };
 
+  const findCompanion = (
+    assessment: AssessmentHistoryItem,
+  ): AiCompanion | undefined => {
+    const storedMatchedType =
+      assessment.matched_personality_type as PersonalityType;
+
+    const companionFromType =
+      aiCompanions[storedMatchedType];
+
+    if (companionFromType) {
+      return companionFromType;
+    }
+
+    const companionFromName = Object.values(
+      aiCompanions,
+    ).find(
+      (companion) =>
+        companion?.name.toLowerCase() ===
+        assessment.companion_name.toLowerCase(),
+    );
+
+    return companionFromName ?? aiCompanions.INFJ;
+  };
+
+  const handleOpenLetter = (
+    assessment: AssessmentHistoryItem,
+  ) => {
+    const companion = findCompanion(assessment);
+
+    if (!companion) {
+      setError(
+        "The companion connected to this letter could not be found.",
+      );
+      return;
+    }
+
+    const userPersonalityType =
+      assessment.personality_type as PersonalityType;
+
+    const matchedPersonalityType =
+      companion.personalityType;
+
+    navigate("/letter-invitation", {
+      state: {
+        assessmentId: assessment.id,
+
+        userPersonalityType,
+        matchedPersonalityType,
+        companion,
+
+        extraversion: assessment.extraversion,
+        introversion: assessment.introversion,
+        sensing: assessment.sensing,
+        intuition: assessment.intuition,
+        thinking: assessment.thinking,
+        feeling: assessment.feeling,
+        judging: assessment.judging,
+        perceiving: assessment.perceiving,
+      },
+    });
+  };
+
   return (
     <main className="history-page">
       <button
@@ -79,14 +146,14 @@ function AssessmentHistory() {
       <section className="history-container">
         <header className="history-header">
           <p className="history-label">
-            Your personality journey
+            Your collection of letters
           </p>
 
           <h1>Assessment history</h1>
 
           <p>
-            Review your previous personality results and matched AI
-            companions.
+            Reopen a letter to revisit your personality
+            journey and AI companion.
           </p>
         </header>
 
@@ -94,26 +161,31 @@ function AssessmentHistory() {
           <section className="history-message-card">
             <div className="history-loader" />
 
-            <h2>Loading your history</h2>
+            <h2>Loading your letters</h2>
 
             <p>
-              Please wait while we retrieve your saved assessments.
+              Please wait while we retrieve your saved
+              assessments.
             </p>
           </section>
         )}
 
         {!isLoading && error && (
           <section className="history-message-card">
-            <div className="history-message-icon">!</div>
+            <div className="history-message-icon">
+              !
+            </div>
 
-            <h2>We could not load your history</h2>
+            <h2>We could not load your letters</h2>
 
             <p>{error}</p>
 
             <button
               className="history-primary-button"
               type="button"
-              onClick={() => void loadAssessmentHistory()}
+              onClick={() =>
+                void loadAssessmentHistory()
+              }
             >
               Try again
             </button>
@@ -124,19 +196,24 @@ function AssessmentHistory() {
           !error &&
           assessments.length === 0 && (
             <section className="history-message-card">
-              <div className="history-message-icon">?</div>
+              <div className="history-message-icon">
+                ✦
+              </div>
 
-              <h2>No assessments yet</h2>
+              <h2>No letters yet</h2>
 
               <p>
-                Complete your first personality assessment and
-                your result will appear here.
+                Complete your first personality
+                assessment and your letter will appear
+                here.
               </p>
 
               <button
                 className="history-primary-button"
                 type="button"
-                onClick={() => navigate("/assessment")}
+                onClick={() =>
+                  navigate("/assessment")
+                }
               >
                 Start assessment
               </button>
@@ -146,92 +223,75 @@ function AssessmentHistory() {
         {!isLoading &&
           !error &&
           assessments.length > 0 && (
-            <section className="history-list">
-              {assessments.map((assessment) => (
-                <article
-                  className="history-card"
-                  key={assessment.id}
-                >
-                  <div className="history-card-top">
-                    <div>
-                      <p className="history-date">
-                        {formatDate(assessment.created_at)}
-                      </p>
+            <section className="history-letter-grid">
+              {assessments.map((assessment) => {
+                const companion =
+                  findCompanion(assessment);
 
-                      <h2>{assessment.personality_type}</h2>
-                    </div>
+                const companionName =
+                  companion?.name ??
+                  assessment.companion_name;
 
-                    <span className="history-match-badge">
-                      Matched
-                    </span>
-                  </div>
-
-                  <div className="history-match-section">
-                    <div className="history-companion-avatar">
-                      {assessment.companion_name
-                        .charAt(0)
-                        .toUpperCase()}
-                    </div>
-
-                    <div>
-                      <span>Your AI companion</span>
-
-                      <h3>{assessment.companion_name}</h3>
-
-                      <p>
-                        {assessment.matched_personality_type}{" "}
-                        personality
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="history-trait-grid">
-                    <div>
-                      <span>E / I</span>
-
-                      <strong>
-                        {assessment.extraversion}% /{" "}
-                        {assessment.introversion}%
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>S / N</span>
-
-                      <strong>
-                        {assessment.sensing}% /{" "}
-                        {assessment.intuition}%
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>T / F</span>
-
-                      <strong>
-                        {assessment.thinking}% /{" "}
-                        {assessment.feeling}%
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>J / P</span>
-
-                      <strong>
-                        {assessment.judging}% /{" "}
-                        {assessment.perceiving}%
-                      </strong>
-                    </div>
-                  </div>
-
-                  <button
-                    className="history-secondary-button"
-                    type="button"
-                    onClick={() => navigate(`/history/${assessment.id}`)}
+                return (
+                  <article
+                    className="history-letter-wrapper"
+                    key={assessment.id}
                   >
-                    View full result
-                  </button>
-                </article>
-              ))}
+                    <button
+                      className="history-letter-card"
+                      type="button"
+                      onClick={() =>
+                        handleOpenLetter(assessment)
+                      }
+                      aria-label={`Open a letter from ${companionName}`}
+                    >
+                      <span className="history-letter-date">
+                        {formatDate(
+                          assessment.created_at,
+                        )}
+                      </span>
+
+                      <span
+                        className="history-envelope"
+                        aria-hidden="true"
+                      >
+                        <span className="history-envelope-glow" />
+
+                        <span className="history-envelope-body">
+                          <span className="history-envelope-letter">
+                            <span className="history-letter-line" />
+                            <span className="history-letter-line history-letter-line-medium" />
+                            <span className="history-letter-line history-letter-line-short" />
+                          </span>
+
+                          <span className="history-envelope-left" />
+                          <span className="history-envelope-right" />
+                          <span className="history-envelope-bottom" />
+                          <span className="history-envelope-flap" />
+
+                          <span className="history-wax-seal">
+                            ✦
+                          </span>
+                        </span>
+                      </span>
+
+                      <span className="history-letter-hover-content">
+                        <span className="history-letter-from">
+                          A letter from
+                        </span>
+
+                        <strong className="history-letter-companion-name">
+                          {companionName}
+                        </strong>
+                      </span>
+
+                      <span className="history-letter-open-text">
+                        Open letter →
+                      </span>
+                    </button>
+                  </article>
+                );
+              })}
             </section>
           )}
       </section>

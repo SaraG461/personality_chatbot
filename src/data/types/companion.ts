@@ -21,7 +21,7 @@ export type Favourite = {
   value: string;
 };
 
-export type AICompanion = {
+export type AiCompanion = {
   personalityType: PersonalityType;
   name: string;
   title: string;

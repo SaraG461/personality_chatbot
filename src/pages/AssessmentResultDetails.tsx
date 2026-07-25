@@ -13,8 +13,8 @@ import {
 } from "../services/assessmentService";
 
 import type { PersonalityType } from "../data/types/companion";
-
 import "./Assessment.css";
+import "./AssessmentResultDetails.css";
 
 type TraitBarProps = {
   leftLabel: string;
@@ -213,16 +213,29 @@ function AssessmentResultDetails() {
     setIsRevealing(true);
 
     window.setTimeout(() => {
-      navigate("/meet-companion", {
+      navigate("/letter-invitation", {
         state: {
+          assessmentId: assessment.id,
+
           userPersonalityType:
             assessment.personality_type,
+
           matchedPersonalityType:
             assessment.matched_personality_type,
+
           companion: matchedCompanion,
+
+          extraversion: assessment.extraversion,
+          introversion: assessment.introversion,
+          sensing: assessment.sensing,
+          intuition: assessment.intuition,
+          thinking: assessment.thinking,
+          feeling: assessment.feeling,
+          judging: assessment.judging,
+          perceiving: assessment.perceiving,
         },
       });
-    }, 1800);
+    }, 800);
   };
 
   return (
@@ -291,53 +304,58 @@ function AssessmentResultDetails() {
           />
         </div>
 
-        <div className="companion-reveal-section">
-          {!isRevealing ? (
-            <>
-              <p className="assessment-label">
-                Your companion is waiting
-              </p>
+                  <div className="companion-reveal-section">
+                      {!isRevealing ? (
+                        <>
+                          <div className="result-continue-section">
+                            <div className="result-continue-divider">
+                              <span />
+                              <span className="result-continue-symbol">
+                                ✦
+                              </span>
+                              <span />
+                            </div>
 
-              <h2>Ready to meet your companion?</h2>
+                            <p className="result-continue-caption">
+                              Your next page is ready.
+                            </p>
 
-              <p className="completion-description">
-                A companion has been selected to complement
-                your personality.
-              </p>
+                            <button
+                              className="journey-button"
+                              type="button"
+                              onClick={handleRevealCompanion}
+                              disabled={isRevealing}
+                            >
+                              <span className="journey-button-text">
+                                Continue your journey
+                              </span>
 
-              <button
-                className="assessment-primary-button"
-                type="button"
-                onClick={handleRevealCompanion}
-                disabled={!matchedCompanion}
-              >
-                ✨ Reveal your companion
-              </button>
+                              <span className="journey-button-arrow">
+                                →
+                              </span>
+                            </button>
+                          </div>
 
-              {!matchedCompanion && (
-                <p className="assessment-save-error">
-                  The matched companion could not be found.
-                </p>
-              )}
-            </>
-          ) : (
-            <div className="companion-searching">
-              <div className="reveal-spinner" />
+                          {!matchedCompanion && (
+                            <p className="assessment-save-error">
+                              The matched companion could not be found.
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <div className="companion-searching">
+                          <div className="reveal-spinner" />
 
-              <p className="assessment-label">
-                Searching...
-              </p>
+                          <p className="assessment-label">
+                            Preparing...
+                          </p>
 
-              <h2>
-                Finding the companion meant for you...
-              </h2>
-
-              <p className="completion-description">
-                Preparing your introduction.
-              </p>
-            </div>
-          )}
-        </div>
+                          <h2>
+                            Opening the next page of your journey...
+                          </h2>
+                        </div>
+                      )}
+                    </div>
 
         <div className="completion-actions">
           <button
