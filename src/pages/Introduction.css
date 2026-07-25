@@ -1,0 +1,432 @@
+.introduction-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 5rem 1.5rem 3rem;
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(158, 99, 255, 0.2),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 15% 80%,
+      rgba(109, 40, 217, 0.16),
+      transparent 35%
+    ),
+    linear-gradient(
+      145deg,
+      #100b18 0%,
+      #1b1326 45%,
+      #0d0913 100%
+    );
+  color: #f8f5ff;
+  isolation: isolate;
+}
+
+.introduction-theme-toggle {
+  position: absolute;
+  top: 1.4rem;
+  right: 1.4rem;
+  z-index: 10;
+}
+
+.introduction-scene {
+  position: relative;
+  z-index: 4;
+  width: min(100%, 760px);
+  text-align: center;
+  animation: introductionSceneFade 1.2s ease both;
+}
+
+.introduction-symbol {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(210, 169, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(125, 72, 183, 0.12);
+  box-shadow:
+    0 0 35px rgba(188, 119, 255, 0.28),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+  color: #d9adff;
+  font-size: 1.8rem;
+  animation: introductionSymbolPulse 2.8s ease-in-out infinite;
+}
+
+.introduction-eyebrow {
+  margin: 0 0 1rem;
+  color: #c998f4;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  animation: introductionTextFade 1s ease 0.25s both;
+}
+
+.introduction-scene h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 5.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+  animation: introductionTextFade 1s ease 0.5s both;
+}
+
+.introduction-scene h1 span {
+  display: block;
+  margin-top: 0.25rem;
+  color: #d2a1ff;
+}
+
+.introduction-message {
+  max-width: 610px;
+  margin: 1.75rem auto 0;
+  color: #c9c0d3;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.8;
+  text-wrap: balance;
+  animation: introductionTextFade 1s ease 0.8s both;
+}
+
+.introduction-personality {
+  width: fit-content;
+  margin: 2rem auto;
+  padding: 0.8rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(205, 165, 245, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(12px);
+  animation: introductionTextFade 1s ease 1s both;
+}
+
+.introduction-personality span {
+  color: #aca2b8;
+  font-size: 0.9rem;
+}
+
+.introduction-personality strong {
+  color: #d7a7ff;
+  letter-spacing: 0.08em;
+}
+
+.introduction-reveal-button {
+  min-width: min(100%, 290px);
+  padding: 1rem 1.6rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      #9e5fd8,
+      #d0a4f3
+    );
+  box-shadow:
+    0 14px 36px rgba(144, 78, 205, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.12)
+      inset;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  animation: introductionTextFade 1s ease 1.2s both;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.introduction-reveal-button:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow:
+    0 20px 46px rgba(144, 78, 205, 0.42),
+    0 0 28px rgba(203, 151, 246, 0.2);
+  filter: brightness(1.06);
+}
+
+.introduction-reveal-button:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.introduction-back-button {
+  display: block;
+  margin: 1.3rem auto 0;
+  padding: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #9e94a9;
+  font: inherit;
+  cursor: pointer;
+  animation: introductionTextFade 1s ease 1.35s both;
+  transition: color 180ms ease;
+}
+
+.introduction-back-button:hover {
+  color: #eee7f6;
+}
+
+.introduction-glow {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.introduction-glow-one {
+  width: 340px;
+  height: 340px;
+  top: -110px;
+  right: -80px;
+  background: rgba(172, 96, 255, 0.5);
+  animation: introductionGlowMove 9s ease-in-out infinite;
+}
+
+.introduction-glow-two {
+  width: 290px;
+  height: 290px;
+  bottom: -100px;
+  left: -70px;
+  background: rgba(102, 42, 166, 0.5);
+  animation: introductionGlowMove 11s ease-in-out infinite reverse;
+}
+
+.introduction-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.introduction-particles span {
+  position: absolute;
+  bottom: -20px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(226, 194, 255, 0.8);
+  box-shadow: 0 0 14px rgba(208, 153, 255, 0.8);
+  animation: introductionParticleRise 9s linear infinite;
+}
+
+.introduction-particles span:nth-child(1) {
+  left: 8%;
+  animation-delay: 0s;
+}
+
+.introduction-particles span:nth-child(2) {
+  left: 22%;
+  width: 3px;
+  height: 3px;
+  animation-delay: 2s;
+  animation-duration: 11s;
+}
+
+.introduction-particles span:nth-child(3) {
+  left: 37%;
+  animation-delay: 4s;
+  animation-duration: 8s;
+}
+
+.introduction-particles span:nth-child(4) {
+  left: 49%;
+  width: 7px;
+  height: 7px;
+  animation-delay: 1s;
+  animation-duration: 13s;
+}
+
+.introduction-particles span:nth-child(5) {
+  left: 63%;
+  animation-delay: 5s;
+  animation-duration: 10s;
+}
+
+.introduction-particles span:nth-child(6) {
+  left: 75%;
+  width: 3px;
+  height: 3px;
+  animation-delay: 3s;
+}
+
+.introduction-particles span:nth-child(7) {
+  left: 87%;
+  animation-delay: 6s;
+  animation-duration: 12s;
+}
+
+.introduction-particles span:nth-child(8) {
+  left: 95%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 1.5s;
+  animation-duration: 9s;
+}
+
+.introduction-error-card {
+  width: min(100%, 520px);
+  padding: 2.5rem;
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  border: 1px solid rgba(208, 170, 245, 0.18);
+  border-radius: 24px;
+  background: rgba(37, 28, 47, 0.82);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.introduction-error-icon {
+  display: block;
+  margin-bottom: 1rem;
+  color: #d4a5ff;
+  font-size: 2rem;
+}
+
+.introduction-error-card h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.introduction-error-card p {
+  margin: 1rem 0 1.5rem;
+  color: #bdb3c8;
+  line-height: 1.7;
+}
+
+.introduction-error-card button {
+  padding: 0.85rem 1.25rem;
+  border: 0;
+  border-radius: 12px;
+  background: #b77ce5;
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes introductionSceneFade {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes introductionTextFade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes introductionSymbolPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 25px rgba(188, 119, 255, 0.2),
+      inset 0 0 20px rgba(255, 255, 255, 0.04);
+  }
+
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 48px rgba(188, 119, 255, 0.42),
+      inset 0 0 24px rgba(255, 255, 255, 0.08);
+  }
+}
+
+@keyframes introductionParticleRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.7);
+  }
+
+  15% {
+    opacity: 0.8;
+  }
+
+  80% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-110vh) scale(1.35);
+  }
+}
+
+@keyframes introductionGlowMove {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(35px, 28px) scale(1.1);
+  }
+}
+
+@media (max-width: 600px) {
+  .introduction-page {
+    padding-inline: 1.1rem;
+  }
+
+  .introduction-theme-toggle {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .introduction-scene h1 {
+    font-size: clamp(2.35rem, 12vw, 3.7rem);
+  }
+
+  .introduction-message {
+    line-height: 1.65;
+  }
+
+  .introduction-personality {
+    flex-direction: column;
+    gap: 0.25rem;
+    border-radius: 18px;
+  }
+
+  .introduction-reveal-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .introduction-page *,
+  .introduction-page *::before,
+  .introduction-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

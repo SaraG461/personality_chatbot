@@ -5,44 +5,68 @@ import {
 } from "react-router-dom";
 
 import ThemeToggle from "../components/ThemeToggle";
-import "./AssessmentResultDetails.css";
+import { aiCompanions } from "../data/aiCompanions";
 
 import {
   getAssessmentById,
   type AssessmentHistoryItem,
 } from "../services/assessmentService";
 
+import type { PersonalityType } from "../data/types/companion";
+import "./Assessment.css";
 import "./AssessmentResultDetails.css";
 
-type TraitRowProps = {
+type TraitBarProps = {
   leftLabel: string;
-  leftValue: number;
+  leftLetter: string;
+  leftPercentage: number;
   rightLabel: string;
-  rightValue: number;
+  rightLetter: string;
+  rightPercentage: number;
 };
 
-function TraitRow({
+function TraitBar({
   leftLabel,
-  leftValue,
+  leftLetter,
+  leftPercentage,
   rightLabel,
-  rightValue,
-}: TraitRowProps) {
+  rightLetter,
+  rightPercentage,
+}: TraitBarProps) {
+  const dominantLetter =
+    leftPercentage >= rightPercentage
+      ? leftLetter
+      : rightLetter;
+
   return (
-    <div className="result-detail-trait">
-      <div className="result-detail-trait-labels">
-        <span>
-          {leftLabel}: {leftValue}%
+    <div className="trait-result">
+      <div className="trait-result-heading">
+        <div>
+          <strong>{leftLetter}</strong>
+          <span>{leftLabel}</span>
+        </div>
+
+        <span className="dominant-trait">
+          Stronger preference: {dominantLetter}
         </span>
 
-        <span>
-          {rightLabel}: {rightValue}%
-        </span>
+        <div>
+          <strong>{rightLetter}</strong>
+          <span>{rightLabel}</span>
+        </div>
       </div>
 
-      <div className="result-detail-trait-track">
+      <div className="trait-percentages">
+        <span>{leftPercentage}%</span>
+        <span>{rightPercentage}%</span>
+      </div>
+
+      <div className="trait-bar-track">
         <div
-          className="result-detail-trait-fill"
-          style={{ width: `${leftValue}%` }}
+          className="trait-bar-left"
+          style={{
+            width: `${leftPercentage}%`,
+          }}
         />
       </div>
     </div>
@@ -51,20 +75,30 @@ function TraitRow({
 
 function AssessmentResultDetails() {
   const navigate = useNavigate();
-  const { assessmentId } = useParams();
+
+  const { assessmentId } = useParams<{
+    assessmentId: string;
+  }>();
 
   const [assessment, setAssessment] =
     useState<AssessmentHistoryItem | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isRevealing, setIsRevealing] = useState(false);
 
   useEffect(() => {
     const loadAssessment = async () => {
-      const parsedId = Number(assessmentId);
+      if (!assessmentId) {
+        setError("No assessment ID was provided.");
+        setIsLoading(false);
+        return;
+      }
 
-      if (!Number.isInteger(parsedId) || parsedId <= 0) {
-        setError("This assessment ID is not valid.");
+      const numericAssessmentId = Number(assessmentId);
+
+      if (Number.isNaN(numericAssessmentId)) {
+        setError("The assessment ID is invalid.");
         setIsLoading(false);
         return;
       }
@@ -73,13 +107,14 @@ function AssessmentResultDetails() {
         setIsLoading(true);
         setError("");
 
-        const result = await getAssessmentById(parsedId);
+        const savedAssessment =
+          await getAssessmentById(numericAssessmentId);
 
-        setAssessment(result);
-      } catch (caughtError) {
+        setAssessment(savedAssessment);
+      } catch (loadError) {
         const message =
-          caughtError instanceof Error
-            ? caughtError.message
+          loadError instanceof Error
+            ? loadError.message
             : "The assessment result could not be loaded.";
 
         setError(message);
@@ -88,141 +123,251 @@ function AssessmentResultDetails() {
       }
     };
 
-    void loadAssessment();
+    loadAssessment();
   }, [assessmentId]);
 
-  const formatDate = (dateValue: string) => {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(dateValue));
-  };
+  if (isLoading) {
+    return (
+      <main className="assessment-page">
+        <button
+          className="assessment-home-button"
+          type="button"
+          onClick={() => navigate("/history")}
+        >
+          ← Back to history
+        </button>
 
-  return (
-    <main className="result-details-page">
-      <button
-        className="result-details-back-button"
-        type="button"
-        onClick={() => navigate("/history")}
-      >
-        ← Back to history
-      </button>
+        <div className="assessment-theme-toggle">
+          <ThemeToggle />
+        </div>
 
-      <div className="result-details-theme-toggle">
-        <ThemeToggle />
-      </div>
+        <section className="assessment-complete-card">
+          <p className="assessment-label">
+            Loading assessment
+          </p>
 
-      {isLoading && (
-        <section className="result-details-message-card">
-          <div className="result-details-loader" />
-
-          <h1>Loading your result</h1>
+          <h1>Getting your result...</h1>
         </section>
-      )}
+      </main>
+    );
+  }
 
-      {!isLoading && error && (
-        <section className="result-details-message-card">
-          <div className="result-details-message-icon">!</div>
+  if (error || !assessment) {
+    return (
+      <main className="assessment-page">
+        <button
+          className="assessment-home-button"
+          type="button"
+          onClick={() => navigate("/history")}
+        >
+          ← Back to history
+        </button>
 
-          <h1>We could not load this result</h1>
+        <div className="assessment-theme-toggle">
+          <ThemeToggle />
+        </div>
 
-          <p>{error}</p>
+        <section className="assessment-complete-card">
+          <div className="completion-icon">!</div>
+
+          <p className="assessment-label">
+            Unable to load result
+          </p>
+
+          <h1>We could not find this assessment</h1>
+
+          <p className="assessment-save-error">
+            {error || "The assessment result was not found."}
+          </p>
 
           <button
-            className="result-details-primary-button"
+            className="assessment-primary-button"
             type="button"
             onClick={() => navigate("/history")}
           >
             Return to history
           </button>
         </section>
-      )}
+      </main>
+    );
+  }
 
-      {!isLoading && !error && assessment && (
-        <section className="result-details-container">
-          <header className="result-details-header">
-            <p className="result-details-label">
-              Personality result
-            </p>
+  const matchedPersonalityType =
+    assessment.matched_personality_type as PersonalityType;
 
-            <h1>{assessment.personality_type}</h1>
+  const matchedCompanion =
+    aiCompanions[matchedPersonalityType];
 
-            <p>
-              Completed on {formatDate(assessment.created_at)}
-            </p>
-          </header>
+  const formattedDate = new Date(
+    assessment.created_at,
+  ).toLocaleString("en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
 
-          <section className="result-details-card">
-            <div className="result-details-companion">
-              <div className="result-details-avatar">
-                {assessment.companion_name
-                  .charAt(0)
-                  .toUpperCase()}
-              </div>
+  const handleRevealCompanion = () => {
+    if (!matchedCompanion || isRevealing) {
+      return;
+    }
 
-              <div>
-                <span>Your matched AI companion</span>
+    setIsRevealing(true);
 
-                <h2>{assessment.companion_name}</h2>
+    window.setTimeout(() => {
+      navigate("/letter-invitation", {
+        state: {
+          assessmentId: assessment.id,
 
-                <p>
-                  {assessment.matched_personality_type} personality
-                </p>
-              </div>
-            </div>
+          userPersonalityType:
+            assessment.personality_type,
 
-            <div className="result-details-traits">
-              <TraitRow
-                leftLabel="Extraversion"
-                leftValue={assessment.extraversion}
-                rightLabel="Introversion"
-                rightValue={assessment.introversion}
-              />
+          matchedPersonalityType:
+            assessment.matched_personality_type,
 
-              <TraitRow
-                leftLabel="Sensing"
-                leftValue={assessment.sensing}
-                rightLabel="Intuition"
-                rightValue={assessment.intuition}
-              />
+          companion: matchedCompanion,
 
-              <TraitRow
-                leftLabel="Thinking"
-                leftValue={assessment.thinking}
-                rightLabel="Feeling"
-                rightValue={assessment.feeling}
-              />
+          extraversion: assessment.extraversion,
+          introversion: assessment.introversion,
+          sensing: assessment.sensing,
+          intuition: assessment.intuition,
+          thinking: assessment.thinking,
+          feeling: assessment.feeling,
+          judging: assessment.judging,
+          perceiving: assessment.perceiving,
+        },
+      });
+    }, 800);
+  };
 
-              <TraitRow
-                leftLabel="Judging"
-                leftValue={assessment.judging}
-                rightLabel="Perceiving"
-                rightValue={assessment.perceiving}
-              />
-            </div>
+  return (
+    <main className="assessment-page">
+      <button
+        className="assessment-home-button"
+        type="button"
+        onClick={() => navigate("/history")}
+      >
+        ← Back to history
+      </button>
 
-            <div className="result-details-actions">
-              <button
-                className="result-details-secondary-button"
-                type="button"
-                onClick={() => navigate("/assessment")}
-              >
-                Retake assessment
-              </button>
+      <div className="assessment-theme-toggle">
+        <ThemeToggle />
+      </div>
 
-              <button
-                className="result-details-primary-button"
-                type="button"
-              >
-                Start chatting with {assessment.companion_name}
-              </button>
-            </div>
-          </section>
-        </section>
-      )}
+      <section className="assessment-complete-card">
+        <p className="assessment-label">
+          Saved assessment result
+        </p>
+
+        <h1>
+          Your personality type is{" "}
+          {assessment.personality_type}
+        </h1>
+
+        <p className="completion-description">
+          Completed on {formattedDate}
+        </p>
+
+        <div className="trait-results-list">
+          <TraitBar
+            leftLabel="Extraversion"
+            leftLetter="E"
+            leftPercentage={assessment.extraversion}
+            rightLabel="Introversion"
+            rightLetter="I"
+            rightPercentage={assessment.introversion}
+          />
+
+          <TraitBar
+            leftLabel="Sensing"
+            leftLetter="S"
+            leftPercentage={assessment.sensing}
+            rightLabel="Intuition"
+            rightLetter="N"
+            rightPercentage={assessment.intuition}
+          />
+
+          <TraitBar
+            leftLabel="Thinking"
+            leftLetter="T"
+            leftPercentage={assessment.thinking}
+            rightLabel="Feeling"
+            rightLetter="F"
+            rightPercentage={assessment.feeling}
+          />
+
+          <TraitBar
+            leftLabel="Judging"
+            leftLetter="J"
+            leftPercentage={assessment.judging}
+            rightLabel="Perceiving"
+            rightLetter="P"
+            rightPercentage={assessment.perceiving}
+          />
+        </div>
+
+                  <div className="companion-reveal-section">
+                      {!isRevealing ? (
+                        <>
+                          <div className="result-continue-section">
+                            <div className="result-continue-divider">
+                              <span />
+                              <span className="result-continue-symbol">
+                                ✦
+                              </span>
+                              <span />
+                            </div>
+
+                            <p className="result-continue-caption">
+                              Your next page is ready.
+                            </p>
+
+                            <button
+                              className="journey-button"
+                              type="button"
+                              onClick={handleRevealCompanion}
+                              disabled={isRevealing}
+                            >
+                              <span className="journey-button-text">
+                                Continue your journey
+                              </span>
+
+                              <span className="journey-button-arrow">
+                                →
+                              </span>
+                            </button>
+                          </div>
+
+                          {!matchedCompanion && (
+                            <p className="assessment-save-error">
+                              The matched companion could not be found.
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <div className="companion-searching">
+                          <div className="reveal-spinner" />
+
+                          <p className="assessment-label">
+                            Preparing...
+                          </p>
+
+                          <h2>
+                            Opening the next page of your journey...
+                          </h2>
+                        </div>
+                      )}
+                    </div>
+
+        <div className="completion-actions">
+          <button
+            className="assessment-secondary-button"
+            type="button"
+            onClick={() => navigate("/history")}
+            disabled={isRevealing}
+          >
+            ← Assessment history
+          </button>
+        </div>
+      </section>
     </main>
   );
 }

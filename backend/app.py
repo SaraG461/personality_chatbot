@@ -2,8 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 from supabase import Client, create_client
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -11,7 +11,20 @@ app = Flask(__name__)
 
 CORS(
     app,
-    origins=["http://localhost:5173"],
+    resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:5175",
+                "http://localhost:5176",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:5174",
+                "http://127.0.0.1:5175",
+                "http://127.0.0.1:5176",
+            ]
+        }
+    },
 )
 
 supabase_url = os.getenv("SUPABASE_URL")

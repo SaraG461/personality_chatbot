@@ -1,0 +1,155 @@
+.storybook-page {
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+}
+
+.storybook-home-button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.storybook-theme-toggle {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+}
+
+.storybook-container {
+  width: min(780px, 100%);
+  margin: 4rem auto 0;
+}
+
+.storybook-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.storybook-label {
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+}
+
+.storybook-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+}
+
+.storybook-subtitle {
+  max-width: 580px;
+  margin: 1rem auto 0;
+  line-height: 1.7;
+}
+
+.storybook-book,
+.storybook-unavailable-card {
+  padding: clamp(2rem, 6vw, 4rem);
+  border: 1px solid rgba(127, 127, 127, 0.2);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
+}
+
+.storybook-page-number {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+
+.storybook-avatar {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.18);
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+.storybook-book h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.storybook-book p {
+  line-height: 1.9;
+}
+
+.storybook-opening-line {
+  margin: 2rem 0;
+  text-align: center;
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+.storybook-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.storybook-primary-button,
+.storybook-secondary-button {
+  padding: 0.9rem 1.4rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.storybook-primary-button {
+  border: none;
+  background: #8b5cf6;
+  color: white;
+}
+
+.storybook-secondary-button {
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  background: transparent;
+  color: inherit;
+}
+
+.storybook-unavailable-card {
+  width: min(580px, 100%);
+  margin: 5rem auto 0;
+  text-align: center;
+}
+
+.storybook-unavailable-icon {
+  margin-bottom: 1rem;
+  font-size: 3rem;
+}
+
+@media (max-width: 600px) {
+  .storybook-page {
+    padding: 1.25rem;
+  }
+
+  .storybook-theme-toggle {
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+
+  .storybook-container {
+    margin-top: 4.5rem;
+  }
+
+  .storybook-actions {
+    flex-direction: column;
+  }
+
+  .storybook-primary-button,
+  .storybook-secondary-button {
+    width: 100%;
+  }
+}
